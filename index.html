@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decision-Maker Psychology Simulator</title>
+    <meta name="description" content="Sell into incentives, risk, and politics">
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiRE0gUHN5Y2hvbG9neSIsInNob3J0X25hbWUiOiJETS1Qc3ljaCIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMGYxNzJhIiwidGhlbWVfY29sb3IiOiIjOGI1Y2Y2In0=">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid #1e293b;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 0.95rem;
+        }
+
+        .level-badge {
+            display: inline-block;
+            background: #1e293b;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-top: 12px;
+            color: #8b5cf6;
+            font-weight: 500;
+        }
+
+        .setup-section {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .persona-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .persona-card {
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .persona-card:hover {
+            border-color: #8b5cf6;
+            transform: translateY(-2px);
+        }
+
+        .persona-card.selected {
+            border-color: #8b5cf6;
+            background: linear-gradient(135deg, #8b5cf620 0%, #7c3aed20 100%);
+        }
+
+        .persona-title {
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 4px;
+        }
+
+        .persona-desc {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 12px;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            font-family: inherit;
+            margin-bottom: 16px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #8b5cf6;
+        }
+
+        button {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        button:disabled {
+            background: #334155;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: #334155;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .chat-screen {
+            display: none;
+        }
+
+        .chat-screen.active {
+            display: block;
+        }
+
+        .buyer-profile {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #8b5cf6;
+        }
+
+        .buyer-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 8px;
+        }
+
+        .buyer-context {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .conversation-window {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 16px;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message.buyer {
+            align-items: flex-start;
+        }
+
+        .message.rep {
+            align-items: flex-end;
+        }
+
+        .message-bubble {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.5;
+        }
+
+        .message.buyer .message-bubble {
+            background: #0f172a;
+            color: #e2e8f0;
+            border: 1px solid #334155;
+        }
+
+        .message.rep .message-bubble {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+        }
+
+        .message-meta {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 4px;
+            padding: 0 4px;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 12px;
+        }
+
+        .input-area textarea {
+            flex: 1;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 12px;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            font-family: inherit;
+            resize: none;
+            min-height: 60px;
+        }
+
+        .input-area textarea:focus {
+            outline: none;
+            border-color: #8b5cf6;
+        }
+
+        .input-area button {
+            width: auto;
+            padding: 12px 24px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .action-buttons button {
+            flex: 1;
+        }
+
+        .reveal-screen {
+            display: none;
+        }
+
+        .reveal-screen.active {
+            display: block;
+        }
+
+        .reveal-card {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .score-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .total-score {
+            font-size: 4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .score-label {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .score-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .score-item {
+            background: #0f172a;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .score-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #8b5cf6;
+            margin-bottom: 4px;
+        }
+
+        .score-desc {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .hidden-profile {
+            background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .profile-section {
+            margin-bottom: 20px;
+        }
+
+        .profile-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .profile-section h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #fca5a5;
+            margin-bottom: 8px;
+        }
+
+        .profile-section p {
+            color: #fecaca;
+            line-height: 1.6;
+        }
+
+        .profile-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .profile-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #7f1d1d80;
+            color: #fecaca;
+        }
+
+        .profile-list li:last-child {
+            border-bottom: none;
+        }
+
+        .diagnosis-section {
+            background: #0f172a;
+            border-left: 3px solid #8b5cf6;
+            padding: 16px;
+            margin: 16px 0;
+            border-radius: 4px;
+        }
+
+        .diagnosis-section h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .diagnosis-section p {
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
+        .pass-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .pass-indicator.pass {
+            background: #14532d;
+            color: #86efac;
+        }
+
+        .pass-indicator.fail {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #64748b;
+        }
+
+        .spinner {
+            border: 3px solid #334155;
+            border-top-color: #8b5cf6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .turn-counter {
+            text-align: center;
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 12px;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .persona-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .score-breakdown {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Mode 2: Decision-Maker Psychology</h1>
+            <p class="subtitle">Sell into incentives, risk, and politics</p>
+            <div class="level-badge">Level <span id="currentLevel">1</span></div>
+        </header>
+
+        <!-- Setup Screen -->
+        <div id="setupScreen">
+            <div class="setup-section">
+                <h2 style="margin-bottom: 20px;">Select Buyer Persona</h2>
+                
+                <div class="persona-grid" id="personaGrid">
+                    <!-- Personas will be inserted here -->
+                </div>
+
+                <label>Industry Context (optional)</label>
+                <select id="industrySelect">
+                    <option value="">Any</option>
+                    <option value="saas">SaaS / Software</option>
+                    <option value="manufacturing">Manufacturing / Industrial</option>
+                    <option value="finance">Finance / Banking</option>
+                    <option value="healthcare">Healthcare</option>
+                    <option value="construction">Construction</option>
+                    <option value="retail">Retail / E-commerce</option>
+                    <option value="compliance">Compliance / Legal</option>
+                </select>
+
+                <label>Company Size</label>
+                <select id="companySizeSelect">
+                    <option value="50-200">50-200 employees</option>
+                    <option value="200-500">200-500 employees</option>
+                    <option value="500-2000">500-2000 employees</option>
+                    <option value="2000+">2000+ employees</option>
+                </select>
+
+                <label>Your Product/Solution (optional)</label>
+                <input type="text" id="productInput" placeholder="e.g. Compliance automation platform">
+
+                <button onclick="startRoleplay()">Generate Buyer & Start</button>
+            </div>
+        </div>
+
+        <!-- Chat Screen -->
+        <div id="chatScreen" class="chat-screen">
+            <div class="buyer-profile">
+                <div class="buyer-name" id="buyerName">Loading...</div>
+                <div class="buyer-context" id="buyerContext"></div>
+            </div>
+
+            <div class="turn-counter">
+                <span id="turnCount">0</span> exchanges | <span id="timeElapsed">0:00</span> elapsed
+            </div>
+
+            <div class="conversation-window" id="conversationWindow">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Generating buyer psychology...</p>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <textarea id="messageInput" placeholder="Type your message..." onkeypress="handleKeyPress(event)"></textarea>
+                <button onclick="sendMessage()">Send</button>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-secondary" onclick="endConversation()">End & Reveal Psychology</button>
+            </div>
+        </div>
+
+        <!-- Reveal Screen -->
+        <div id="revealScreen" class="reveal-screen">
+            <div class="reveal-card">
+                <div class="score-header">
+                    <div class="total-score" id="totalScore">0</div>
+                    <div class="score-label">Psychology Score</div>
+                </div>
+
+                <div class="score-breakdown">
+                    <div class="score-item">
+                        <div class="score-value" id="incentiveScore">0</div>
+                        <div class="score-desc">Incentive Alignment</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-value" id="riskScore">0</div>
+                        <div class="score-desc">Risk Reversal</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-value" id="stakeholderScore">0</div>
+                        <div class="score-desc">Stakeholder Mapping</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-value" id="safetyScore">0</div>
+                        <div class="score-desc">Personal Safety</div>
+                    </div>
+                </div>
+
+                <div class="hidden-profile">
+                    <h2 style="margin-bottom: 20px; color: #fecaca;">🔓 Hidden Profile Revealed</h2>
+                    
+                    <div class="profile-section">
+                        <h3>Real Incentives</h3>
+                        <p id="profileIncentives"></p>
+                    </div>
+
+                    <div class="profile-section">
+                        <h3>Hidden Fears</h3>
+                        <p id="profileFears"></p>
+                    </div>
+
+                    <div class="profile-section">
+                        <h3>Political Constraints</h3>
+                        <p id="profilePolitics"></p>
+                    </div>
+
+                    <div class="profile-section">
+                        <h3>Personal Win Condition</h3>
+                        <p id="profileWinCondition"></p>
+                    </div>
+                </div>
+
+                <div class="diagnosis-section">
+                    <h3>What You Missed</h3>
+                    <p id="diagnosisWhat"></p>
+                </div>
+
+                <div class="diagnosis-section">
+                    <h3>What You Got Right</h3>
+                    <p id="diagnosisRight"></p>
+                </div>
+
+                <div class="diagnosis-section">
+                    <h3>Next Rep Focus</h3>
+                    <p id="diagnosisNext"></p>
+                </div>
+
+                <div class="action-buttons" style="margin-top: 24px;">
+                    <button class="btn-secondary" onclick="reset()">New Scenario</button>
+                    <button onclick="reviewConversation()">Review Conversation</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = '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';
+        const API_URL = 'https://api.anthropic.com/v1/messages';
+
+        const PERSONAS = [
+            {
+                id: 'cfo',
+                title: 'CFO / Finance VP',
+                desc: 'Risk-averse, ROI-focused, politically cautious'
+            },
+            {
+                id: 'founder',
+                title: 'Founder / CEO',
+                desc: 'Speed-focused, vision-driven, impatient'
+            },
+            {
+                id: 'head_ops',
+                title: 'Head of Operations',
+                desc: 'Execution-focused, skeptical of vendors'
+            },
+            {
+                id: 'vp_sales',
+                title: 'VP of Sales',
+                desc: 'Results-driven, territorial, quota pressure'
+            },
+            {
+                id: 'cto',
+                title: 'CTO / Engineering VP',
+                desc: 'Technical skeptic, hates vendor BS'
+            },
+            {
+                id: 'compliance',
+                title: 'Compliance / Legal',
+                desc: 'Risk-obsessed, process-heavy, slow'
+            },
+            {
+                id: 'chro',
+                title: 'CHRO / Head of People',
+                desc: 'Culture-focused, political minefield, soft metrics'
+            },
+            {
+                id: 'vp_product',
+                title: 'VP Product',
+                desc: 'Roadmap-obsessed, engineering influence, user-focused'
+            },
+            {
+                id: 'procurement',
+                title: 'Procurement / Sourcing',
+                desc: 'Price-driven, vendor fatigue, compliance boxes'
+            },
+            {
+                id: 'gm',
+                title: 'GM / Business Unit Leader',
+                desc: 'P&L pressure, autonomy fighter, results-only'
+            },
+            {
+                id: 'board_member',
+                title: 'Board Member / Advisor',
+                desc: 'High-level, governance focus, risk exposure'
+            },
+            {
+                id: 'vp_customer_success',
+                title: 'VP Customer Success',
+                desc: 'Retention-obsessed, blamed for churn, defensive'
+            },
+            {
+                id: 'vp_marketing',
+                title: 'VP Marketing',
+                desc: 'Attribution pressure, budget battles, CAC-focused'
+            },
+            {
+                id: 'coo',
+                title: 'COO',
+                desc: 'Execution bottleneck, firefighter, overwhelmed'
+            },
+            {
+                id: 'head_it',
+                title: 'Head of IT / InfoSec',
+                desc: 'Security paranoid, integration hell, vendor graveyard'
+            },
+            {
+                id: 'division_president',
+                title: 'Division President',
+                desc: 'Corporate politics, budget autonomy, legacy defender'
+            },
+            {
+                id: 'vp_engineering',
+                title: 'VP Engineering',
+                desc: 'Velocity-obsessed, tech debt warrior, hiring crisis'
+            },
+            {
+                id: 'head_rev_ops',
+                title: 'Head of RevOps',
+                desc: 'Data-driven, stack bloat, attribution hell'
+            }
+        ];
+
+        let gameState = {
+            level: parseInt(localStorage.getItem('mode2_level') || '1'),
+            selectedPersona: null,
+            industry: '',
+            companySize: '',
+            product: '',
+            conversation: [],
+            hiddenProfile: null,
+            startTime: null,
+            turnCount: 0,
+            timerInterval: null
+        };
+
+        // Initialize
+        document.getElementById('currentLevel').textContent = gameState.level;
+        renderPersonas();
+
+        function renderPersonas() {
+            const grid = document.getElementById('personaGrid');
+            grid.innerHTML = PERSONAS.map(p => `
+                <div class="persona-card" data-persona="${p.id}" onclick="selectPersona('${p.id}')">
+                    <div class="persona-title">${p.title}</div>
+                    <div class="persona-desc">${p.desc}</div>
+                </div>
+            `).join('');
+        }
+
+        function selectPersona(personaId) {
+            gameState.selectedPersona = personaId;
+            document.querySelectorAll('.persona-card').forEach(card => {
+                card.classList.toggle('selected', card.dataset.persona === personaId);
+            });
+        }
+
+        async function startRoleplay() {
+            if (!gameState.selectedPersona) {
+                alert('Please select a buyer persona');
+                return;
+            }
+
+            gameState.industry = document.getElementById('industrySelect').value;
+            gameState.companySize = document.getElementById('companySizeSelect').value;
+            gameState.product = document.getElementById('productInput').value.trim();
+            gameState.conversation = [];
+            gameState.startTime = Date.now();
+            gameState.turnCount = 0;
+
+            document.getElementById('setupScreen').style.display = 'none';
+            document.getElementById('chatScreen').classList.add('active');
+
+            startTimer();
+            await generateBuyerProfile();
+        }
+
+        function startTimer() {
+            clearInterval(gameState.timerInterval);
+            gameState.timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - gameState.startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                document.getElementById('timeElapsed').textContent = 
+                    `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        async function generateBuyerProfile() {
+            const persona = PERSONAS.find(p => p.id === gameState.selectedPersona);
+            
+            const complexityLevel = gameState.level < 5 ? 'simple' : 
+                                  gameState.level < 10 ? 'conflicting' : 'political';
+            
+            const prompt = `Generate a realistic buyer profile for a sales roleplay.
+
+PERSONA: ${persona.title}
+INDUSTRY: ${gameState.industry || 'Technology/SaaS'}
+COMPANY SIZE: ${gameState.companySize}
+PRODUCT BEING SOLD: ${gameState.product || 'B2B software solution'}
+COMPLEXITY LEVEL: ${complexityLevel}
+
+Based on complexity level:
+- SIMPLE (Levels 1-4): Clear incentives, obvious pain, straightforward decision
+- CONFLICTING (Levels 5-9): Multiple stakeholders with different priorities
+- POLITICAL (Levels 10+): Internal resistance, someone wants this to fail, career risk
+
+Generate a COMPLETE HIDDEN PROFILE with ALL 10 dimensions. Be SPECIFIC - avoid generic descriptions.
+
+Example of GOOD specificity:
+Incentives: "Surface: reduce compliance risk. Actual: needs a win before Q4 review with board - last 2 initiatives failed"
+Fears: "Career: if this fails, they'll be replaced by external hire. Political: CFO wants to centralize all risk decisions"
+
+Example of BAD (too generic):
+Incentives: "Wants to improve processes"
+Fears: "Worried about risk"
+
+REQUIRED OUTPUT FORMAT (fill ALL 10 dimensions):
+
+BUYER_NAME: [Full name + exact title]
+COMPANY_CONTEXT: [Company name + 1-2 specific sentences about their situation]
+
+HIDDEN_PROFILE:
+Incentives: [Surface goal vs. actual personal motivation - be specific]
+Fears: [Specific career/political/personal risks they're managing]
+Politics: [Named stakeholders, past failures, who wants what]
+Win Condition: [Concrete metric of personal success]
+Career Trajectory: [Specific position - new role? under review? climbing? protecting?]
+Decision Style: [How they actually decide - with examples]
+Vendor Trauma: [Specific past vendor failure or trust issue]
+Time Pressure: [Concrete deadline or lack thereof with reason]
+Competing Priorities: [Named other projects/goals taking their time]
+Power Dynamics: [Specific description of their leverage/weakness]
+
+OPENING_MESSAGE:
+[Natural 2-3 sentence first message - shows surface interest/skepticism, hides real motivations]
+
+CRITICAL: Every dimension must have substantive content. No "**" or blank entries.`;
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': API_KEY,
+                        'anthropic-version': '2023-06-01'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 1500,
+                        messages: [{
+                            role: 'user',
+                            content: prompt
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                const result = data.content[0].text;
+                
+                parseProfileAndStart(result);
+                
+            } catch (error) {
+                alert('Error generating buyer: ' + error.message);
+                reset();
+            }
+        }
+
+        function parseProfileAndStart(text) {
+            const lines = text.split('\n').filter(l => l.trim());
+            
+            let buyerName = '';
+            let companyContext = '';
+            let openingMessage = '';
+            
+            gameState.hiddenProfile = {
+                incentives: '',
+                fears: '',
+                politics: '',
+                winCondition: '',
+                careerTrajectory: '',
+                decisionStyle: '',
+                vendorTrauma: '',
+                timePressure: '',
+                competingPriorities: '',
+                powerDynamics: ''
+            };
+            
+            let section = '';
+            
+            for (const line of lines) {
+                if (line.includes('BUYER_NAME:')) {
+                    buyerName = line.split(':').slice(1).join(':').trim();
+                } else if (line.includes('COMPANY_CONTEXT:')) {
+                    companyContext = line.split(':').slice(1).join(':').trim();
+                } else if (line.includes('HIDDEN_PROFILE:')) {
+                    section = 'profile';
+                } else if (line.includes('OPENING_MESSAGE:')) {
+                    section = 'opening';
+                } else if (section === 'profile') {
+                    if (line.includes('Incentives:')) {
+                        gameState.hiddenProfile.incentives = line.split(':').slice(1).join(':').trim();
+                    } else if (line.includes('Fears:')) {
+                        gameState.hiddenProfile.fears = line.split(':').slice(1).join(':').trim();
+                    } else if (line.includes('Politics:')) {
+                        gameState.hiddenProfile.politics = line.split(':').slice(1).join(':').trim();
+                    } else if (line.includes('Win Condition:')) {
+                        gameState.hiddenProfile.winCondition = line.split(':').slice(1).join(':').trim();
+                    } else if (line.includes('Career Trajectory:')) {
+                        gameState.hiddenProfile.careerTrajectory = line.split(':').slice(1).join(':').trim();
+                    } else if (line.includes('Decision Style:')) {
+                        gameState.hiddenProfile.decisionStyle = line.split(':').slice(1).join(':').trim();
+                    } else if (line.includes('Vendor Trauma:')) {
+                        gameState.hiddenProfile.vendorTrauma = line.split(':').slice(1).join(':').trim();
+                    } else if (line.includes('Time Pressure:')) {
+                        gameState.hiddenProfile.timePressure = line.split(':').slice(1).join(':').trim();
+                    } else if (line.includes('Competing Priorities:')) {
+                        gameState.hiddenProfile.competingPriorities = line.split(':').slice(1).join(':').trim();
+                    } else if (line.includes('Power Dynamics:')) {
+                        gameState.hiddenProfile.powerDynamics = line.split(':').slice(1).join(':').trim();
+                    }
+                } else if (section === 'opening' && line.trim() && !line.includes('[')) {
+                    openingMessage += line.trim() + ' ';
+                }
+            }
+            
+            // Validate that we got a complete profile
+            const missingDimensions = [];
+            if (!gameState.hiddenProfile.incentives) missingDimensions.push('Incentives');
+            if (!gameState.hiddenProfile.fears) missingDimensions.push('Fears');
+            if (!gameState.hiddenProfile.politics) missingDimensions.push('Politics');
+            if (!gameState.hiddenProfile.winCondition) missingDimensions.push('Win Condition');
+            if (!gameState.hiddenProfile.careerTrajectory) missingDimensions.push('Career Trajectory');
+            if (!gameState.hiddenProfile.decisionStyle) missingDimensions.push('Decision Style');
+            if (!gameState.hiddenProfile.vendorTrauma) missingDimensions.push('Vendor Trauma');
+            if (!gameState.hiddenProfile.timePressure) missingDimensions.push('Time Pressure');
+            if (!gameState.hiddenProfile.competingPriorities) missingDimensions.push('Competing Priorities');
+            if (!gameState.hiddenProfile.powerDynamics) missingDimensions.push('Power Dynamics');
+            
+            if (missingDimensions.length > 0) {
+                console.error('Missing profile dimensions:', missingDimensions);
+                console.error('Raw AI response:', text);
+                alert('Error: Failed to generate complete buyer profile. Missing: ' + missingDimensions.join(', ') + '. Please try again.');
+                reset();
+                return;
+            }
+            
+            if (!buyerName || !openingMessage) {
+                console.error('Missing buyer name or opening message');
+                console.error('Raw AI response:', text);
+                alert('Error: Failed to generate buyer. Please try again.');
+                reset();
+                return;
+            }
+            
+            document.getElementById('buyerName').textContent = buyerName;
+            document.getElementById('buyerContext').textContent = companyContext;
+            
+            const conversationWindow = document.getElementById('conversationWindow');
+            conversationWindow.innerHTML = '';
+            
+            addMessage('buyer', openingMessage);
+            gameState.conversation.push({
+                role: 'buyer',
+                content: openingMessage
+            });
+        }
+
+        function addMessage(role, content) {
+            const conversationWindow = document.getElementById('conversationWindow');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.textContent = content;
+            
+            const meta = document.createElement('div');
+            meta.className = 'message-meta';
+            meta.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            messageDiv.appendChild(bubble);
+            messageDiv.appendChild(meta);
+            conversationWindow.appendChild(messageDiv);
+            
+            conversationWindow.scrollTop = conversationWindow.scrollHeight;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            input.value = '';
+            addMessage('rep', message);
+            
+            gameState.conversation.push({
+                role: 'rep',
+                content: message
+            });
+            
+            gameState.turnCount++;
+            document.getElementById('turnCount').textContent = gameState.turnCount;
+            
+            // Get buyer response
+            await getBuyerResponse(message);
+        }
+
+        async function getBuyerResponse(repMessage) {
+            const conversationHistory = gameState.conversation
+                .map(m => `${m.role === 'buyer' ? 'BUYER' : 'REP'}: ${m.content}`)
+                .join('\n\n');
+            
+            const prompt = `You are ${document.getElementById('buyerName').textContent}.
+
+YOUR CHARACTER'S PSYCHOLOGY (never break character or mention these directly):
+- Real motivations: ${gameState.hiddenProfile.incentives}
+- What worries you: ${gameState.hiddenProfile.fears}
+- Internal politics you're dealing with: ${gameState.hiddenProfile.politics}
+- What winning looks like for you personally: ${gameState.hiddenProfile.winCondition}
+- Career situation: ${gameState.hiddenProfile.careerTrajectory}
+- How you make decisions: ${gameState.hiddenProfile.decisionStyle}
+- Past vendor experiences: ${gameState.hiddenProfile.vendorTrauma}
+- Time constraints: ${gameState.hiddenProfile.timePressure}
+- Other priorities: ${gameState.hiddenProfile.competingPriorities}
+- Your position/leverage: ${gameState.hiddenProfile.powerDynamics}
+
+CONVERSATION:
+${conversationHistory}
+
+The sales rep just said: "${repMessage}"
+
+CRITICAL INSTRUCTIONS:
+- You ARE this buyer. Stay completely in character.
+- NEVER break the fourth wall or acknowledge you're an AI
+- NEVER ask for profile information or help with the roleplay
+- Respond naturally as this person would respond
+- Give subtle hints about your real motivations IF they ask good questions
+- Push back, deflect, or get impatient if they're not addressing what matters to you
+- Be realistic - buyers don't reveal everything immediately
+
+Respond in 2-3 sentences as this buyer would actually speak.`;
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': API_KEY,
+                        'anthropic-version': '2023-06-01'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 200,
+                        messages: [{
+                            role: 'user',
+                            content: prompt
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                const buyerResponse = data.content[0].text.trim();
+                
+                addMessage('buyer', buyerResponse);
+                gameState.conversation.push({
+                    role: 'buyer',
+                    content: buyerResponse
+                });
+                
+            } catch (error) {
+                console.error('Error getting buyer response:', error);
+            }
+        }
+
+        async function endConversation() {
+            if (gameState.turnCount < 3) {
+                if (!confirm('You\'ve only had ' + gameState.turnCount + ' exchanges. End now?')) {
+                    return;
+                }
+            }
+            
+            clearInterval(gameState.timerInterval);
+            
+            document.getElementById('chatScreen').classList.remove('active');
+            
+            // Show loading in reveal screen
+            document.getElementById('revealScreen').classList.add('active');
+            document.getElementById('revealScreen').innerHTML = `
+                <div class="reveal-card">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Analyzing your psychology skills...</p>
+                    </div>
+                </div>
+            `;
+            
+            await scoreConversation();
+        }
+
+        async function scoreConversation() {
+            const conversationHistory = gameState.conversation
+                .map(m => `${m.role === 'buyer' ? 'BUYER' : 'REP'}: ${m.content}`)
+                .join('\n\n');
+            
+            const prompt = `Score this sales conversation based on psychology skills.
+
+COMPLETE HIDDEN BUYER PROFILE (10 Dimensions):
+- Incentives: ${gameState.hiddenProfile.incentives}
+- Fears: ${gameState.hiddenProfile.fears}
+- Politics: ${gameState.hiddenProfile.politics}
+- Win Condition: ${gameState.hiddenProfile.winCondition}
+- Career Trajectory: ${gameState.hiddenProfile.careerTrajectory}
+- Decision Style: ${gameState.hiddenProfile.decisionStyle}
+- Vendor Trauma: ${gameState.hiddenProfile.vendorTrauma}
+- Time Pressure: ${gameState.hiddenProfile.timePressure}
+- Competing Priorities: ${gameState.hiddenProfile.competingPriorities}
+- Power Dynamics: ${gameState.hiddenProfile.powerDynamics}
+
+CONVERSATION:
+${conversationHistory}
+
+SCORE (0-25 each):
+1. INCENTIVE ALIGNMENT: Did rep speak to the REAL motivations (not surface problem)? Did they understand career trajectory and personal win condition?
+2. RISK REVERSAL: Did rep reduce personal/career risk? Did they address the buyer's fears and vendor trauma?
+3. STAKEHOLDER MAPPING: Did rep uncover political dynamics, power dynamics, and other players?
+4. PERSONAL SAFETY: Did rep make the buyer feel safe personally (not just ROI)? Did they adapt to decision style and time pressure?
+
+Also diagnose:
+- What the rep completely missed (which dimensions they never touched)
+- What they got right (which dimensions they understood and spoke to)
+- What they should focus on in next rep (specific psychological skills)
+
+Then generate an IDEAL CONVERSATION showing how an elite rep would have handled this buyer. Show 6-8 exchanges that would score 95-100 by:
+- Uncovering each key dimension naturally
+- Speaking to real incentives vs surface problem
+- Addressing fears and building personal safety
+- Mapping stakeholders and politics
+- Adapting to decision style and time pressure
+- Reaching a clear next step
+
+Make it realistic - not robotic or scripted. Show the actual psychological moves.
+
+CRITICAL: After each key move by the rep, add an annotation explaining:
+- Which psychological dimension they just addressed
+- WHY this specific line works for THIS buyer
+- What signal the buyer gives in response
+
+Format annotations like:
+REP: [Their line]
+→ [Dimension addressed + why it works]
+BUYER: [Response]
+→ [What signal they're giving]
+
+RESPOND IN THIS FORMAT:
+
+SCORES:
+Incentive: [0-25]
+Risk: [0-25]
+Stakeholder: [0-25]
+Safety: [0-25]
+Total: [0-100]
+
+WHAT_MISSED:
+[2-3 sentences - specific dimensions/elements they didn't see or address]
+
+WHAT_RIGHT:
+[2-3 sentences - specific dimensions they understood and spoke to well]
+
+NEXT_FOCUS:
+[2 sentences - specific psychological dimension to practice next]
+
+IDEAL_CONVERSATION:
+REP: [Opening that sets frame and shows understanding]
+→ KEY MOVE: [Which dimension + why this works]
+BUYER: [Response based on their psychology]
+→ SIGNAL: [What they're revealing]
+REP: [Question that uncovers key dimension]
+→ KEY MOVE: [Dimension + tactical explanation]
+BUYER: [Opens up slightly or pushes back realistically]
+→ SIGNAL: [What to notice in their response]
+REP: [Addresses fear/risk/politics directly]
+→ KEY MOVE: [How this builds safety/trust]
+BUYER: [Reacts to being understood]
+→ SIGNAL: [Walls coming down]
+REP: [Speaks to real incentive and win condition]
+→ KEY MOVE: [Personal vs organizational motivation]
+BUYER: [Shows genuine interest]
+→ SIGNAL: [Engagement shift]
+REP: [Sets next step with clear value]
+→ KEY MOVE: [Process that fits their decision style]
+BUYER: [Commits to next step]
+→ SIGNAL: [Real commitment vs politeness]
+
+[Continue for 6-8 total exchanges with annotations showing the psychology]`;
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': API_KEY,
+                        'anthropic-version': '2023-06-01'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 3500,
+                        messages: [{
+                            role: 'user',
+                            content: prompt
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                const result = data.content[0].text;
+                
+                displayResults(result);
+                saveSession(result);
+                
+            } catch (error) {
+                alert('Error scoring conversation: ' + error.message);
+            }
+        }
+
+        function displayResults(scoreText) {
+            const lines = scoreText.split('\n');
+            const scores = {
+                incentive: 0,
+                risk: 0,
+                stakeholder: 0,
+                safety: 0,
+                total: 0
+            };
+            
+            let whatMissed = '';
+            let whatRight = '';
+            let nextFocus = '';
+            let idealConversation = '';
+            let section = '';
+            
+            for (const line of lines) {
+                if (line.includes('Incentive:')) scores.incentive = parseInt(line.match(/\d+/)[0]);
+                else if (line.includes('Risk:')) scores.risk = parseInt(line.match(/\d+/)[0]);
+                else if (line.includes('Stakeholder:')) scores.stakeholder = parseInt(line.match(/\d+/)[0]);
+                else if (line.includes('Safety:')) scores.safety = parseInt(line.match(/\d+/)[0]);
+                else if (line.includes('Total:')) scores.total = parseInt(line.match(/\d+/)[0]);
+                else if (line.includes('WHAT_MISSED:')) section = 'missed';
+                else if (line.includes('WHAT_RIGHT:')) section = 'right';
+                else if (line.includes('NEXT_FOCUS:')) section = 'next';
+                else if (line.includes('IDEAL_CONVERSATION:')) section = 'ideal';
+                else if (section && line.trim() && !line.startsWith('[')) {
+                    if (section === 'missed') whatMissed += line.trim() + ' ';
+                    else if (section === 'right') whatRight += line.trim() + ' ';
+                    else if (section === 'next') nextFocus += line.trim() + ' ';
+                    else if (section === 'ideal') idealConversation += line.trim() + '\n';
+                }
+            }
+            
+            // Rebuild reveal screen with results
+            document.getElementById('revealScreen').innerHTML = `
+                <div class="reveal-card">
+                    <div class="score-header">
+                        <div class="total-score">${scores.total}</div>
+                        <div class="score-label">Psychology Score</div>
+                    </div>
+
+                    <div class="score-breakdown">
+                        <div class="score-item">
+                            <div class="score-value">${scores.incentive}</div>
+                            <div class="score-desc">Incentive Alignment</div>
+                        </div>
+                        <div class="score-item">
+                            <div class="score-value">${scores.risk}</div>
+                            <div class="score-desc">Risk Reversal</div>
+                        </div>
+                        <div class="score-item">
+                            <div class="score-value">${scores.stakeholder}</div>
+                            <div class="score-desc">Stakeholder Mapping</div>
+                        </div>
+                        <div class="score-item">
+                            <div class="score-value">${scores.safety}</div>
+                            <div class="score-desc">Personal Safety</div>
+                        </div>
+                    </div>
+
+                    <div class="hidden-profile">
+                        <h2 style="margin-bottom: 20px; color: #fecaca;">🔓 Hidden Profile Revealed</h2>
+                        
+                        <div class="profile-section">
+                            <h3>Real Incentives</h3>
+                            <p>${gameState.hiddenProfile.incentives}</p>
+                        </div>
+
+                        <div class="profile-section">
+                            <h3>Hidden Fears</h3>
+                            <p>${gameState.hiddenProfile.fears}</p>
+                        </div>
+
+                        <div class="profile-section">
+                            <h3>Political Constraints</h3>
+                            <p>${gameState.hiddenProfile.politics}</p>
+                        </div>
+
+                        <div class="profile-section">
+                            <h3>Personal Win Condition</h3>
+                            <p>${gameState.hiddenProfile.winCondition}</p>
+                        </div>
+
+                        <div class="profile-section">
+                            <h3>Career Trajectory</h3>
+                            <p>${gameState.hiddenProfile.careerTrajectory}</p>
+                        </div>
+
+                        <div class="profile-section">
+                            <h3>Decision-Making Style</h3>
+                            <p>${gameState.hiddenProfile.decisionStyle}</p>
+                        </div>
+
+                        <div class="profile-section">
+                            <h3>Vendor Trauma</h3>
+                            <p>${gameState.hiddenProfile.vendorTrauma}</p>
+                        </div>
+
+                        <div class="profile-section">
+                            <h3>Time Pressure</h3>
+                            <p>${gameState.hiddenProfile.timePressure}</p>
+                        </div>
+
+                        <div class="profile-section">
+                            <h3>Competing Priorities</h3>
+                            <p>${gameState.hiddenProfile.competingPriorities}</p>
+                        </div>
+
+                        <div class="profile-section">
+                            <h3>Power Dynamics</h3>
+                            <p>${gameState.hiddenProfile.powerDynamics}</p>
+                        </div>
+                    </div>
+
+                    <div class="diagnosis-section">
+                        <h3>What You Missed</h3>
+                        <p>${whatMissed}</p>
+                    </div>
+
+                    <div class="diagnosis-section">
+                        <h3>What You Got Right</h3>
+                        <p>${whatRight}</p>
+                    </div>
+
+                    <div class="diagnosis-section">
+                        <h3>Next Rep Focus</h3>
+                        <p>${nextFocus}</p>
+                    </div>
+
+                    <div style="background: linear-gradient(135deg, #14532d 0%, #166534 100%); padding: 24px; border-radius: 12px; margin-top: 24px;">
+                        <h2 style="margin-bottom: 16px; color: #86efac;">✨ How An Elite Rep Would Have Handled This</h2>
+                        <p style="color: #bbf7d0; font-size: 0.9rem; margin-bottom: 20px;">
+                            This conversation would score 95-100. Study each psychological move and why it works.
+                        </p>
+                        <div style="background: #0f172a; padding: 24px; border-radius: 8px; line-height: 1.6; color: #cbd5e1; max-height: 600px; overflow-y: auto;">
+${formatIdealConversation(idealConversation)}
+                        </div>
+                        <div style="margin-top: 16px; padding: 12px; background: rgba(16, 185, 129, 0.1); border-radius: 6px; font-size: 0.85rem; color: #bbf7d0;">
+                            <strong>💡 How to use this:</strong> Don't memorize the lines. Study the <em>moves</em> - when they address fears, when they speak to real incentives, how they build safety, how they navigate politics. These patterns transfer across all buyers.
+                        </div>
+                    </div>
+
+                    <div class="action-buttons" style="margin-top: 24px;">
+                        <button class="btn-secondary" onclick="reset()">New Scenario</button>
+                        <button onclick="reviewConversation()">Review Conversation</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function formatIdealConversation(text) {
+            if (!text) return '<em>No ideal conversation generated</em>';
+            
+            return text.split('\n')
+                .filter(line => line.trim())
+                .map(line => {
+                    const trimmed = line.trim();
+                    
+                    if (trimmed.startsWith('REP:')) {
+                        return `<div style="margin-bottom: 4px; margin-top: 16px;"><span style="color: #8b5cf6; font-weight: 600;">REP:</span> <span style="color: #e2e8f0;">${trimmed.substring(4).trim()}</span></div>`;
+                    } 
+                    else if (trimmed.startsWith('BUYER:')) {
+                        return `<div style="margin-bottom: 4px;"><span style="color: #10b981; font-weight: 600;">BUYER:</span> <span style="color: #cbd5e1;">${trimmed.substring(6).trim()}</span></div>`;
+                    }
+                    else if (trimmed.startsWith('→ KEY MOVE:')) {
+                        return `<div style="margin: 8px 0 8px 20px; padding: 8px 12px; background: rgba(139, 92, 246, 0.1); border-left: 3px solid #8b5cf6; border-radius: 4px; font-size: 0.9rem;"><span style="color: #a78bfa;">💡 KEY MOVE:</span> <span style="color: #c4b5fd; font-style: italic;">${trimmed.substring(11).trim()}</span></div>`;
+                    }
+                    else if (trimmed.startsWith('→ SIGNAL:')) {
+                        return `<div style="margin: 8px 0 12px 20px; padding: 8px 12px; background: rgba(16, 185, 129, 0.1); border-left: 3px solid #10b981; border-radius: 4px; font-size: 0.9rem;"><span style="color: #6ee7b7;">✓ SIGNAL:</span> <span style="color: #a7f3d0; font-style: italic;">${trimmed.substring(9).trim()}</span></div>`;
+                    }
+                    else if (trimmed.startsWith('→')) {
+                        // Generic annotation (fallback)
+                        return `<div style="margin: 8px 0 8px 20px; padding: 8px 12px; background: rgba(100, 116, 139, 0.1); border-left: 3px solid #64748b; border-radius: 4px; font-size: 0.9rem;"><span style="color: #94a3b8; font-style: italic;">${trimmed.substring(1).trim()}</span></div>`;
+                    }
+                    else {
+                        return `<div style="margin-bottom: 12px; color: #94a3b8;">${trimmed}</div>`;
+                    }
+                })
+                .join('');
+        }
+
+        function saveSession(scoreText) {
+            const session = {
+                timestamp: Date.now(),
+                level: gameState.level,
+                persona: gameState.selectedPersona,
+                turns: gameState.turnCount,
+                score: parseInt(scoreText.match(/Total:\s*(\d+)/)?.[1] || 0)
+            };
+            
+            const history = JSON.parse(localStorage.getItem('mode2_history') || '[]');
+            history.unshift(session);
+            if (history.length > 50) history.length = 50;
+            localStorage.setItem('mode2_history', JSON.stringify(history));
+        }
+
+        function reviewConversation() {
+            // Rebuild conversation in reveal screen
+            const conversationHTML = gameState.conversation.map(m => `
+                <div class="message ${m.role}">
+                    <div class="message-bubble">${m.content}</div>
+                </div>
+            `).join('');
+            
+            alert('Review feature - conversation would be displayed here. For now, scroll up to see the conversation.');
+        }
+
+        function reset() {
+            document.getElementById('revealScreen').classList.remove('active');
+            document.getElementById('setupScreen').style.display = 'block';
+            
+            gameState.conversation = [];
+            gameState.selectedPersona = null;
+            gameState.turnCount = 0;
+            
+            document.querySelectorAll('.persona-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            document.getElementById('productInput').value = '';
+        }
+    </script>
+</body>
+</html>
